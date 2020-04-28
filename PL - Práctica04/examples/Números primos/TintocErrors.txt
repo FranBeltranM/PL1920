@@ -1,0 +1,5 @@
+[File Main.tinto] 1 error found:
+Sintax exception at row 24, column 22.
+  Found a
+  while expecting ;.
+

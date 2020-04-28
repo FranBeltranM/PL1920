@@ -1,0 +1,74 @@
+import Console;
+
+/**
+ * Aplicación para mostrar los números primos menores de 100.
+ * Biblioteca principal.
+ */
+library Main {
+
+  /**
+   * Punto de entrada de la aplicación
+   */
+  public void Main() 
+  {
+  	int b = 1;
+  	switch(b) {
+  		case 0:
+  			imprimir(b);
+  			break;
+  		case 1:
+  			imprimir(b);
+  			break;
+  		default:
+  			imprimir(b);
+  	}
+
+    int p = 1;
+
+    if ( p== 0) {
+      imprimir(p);
+    } else {
+      for(int i=0; i<10; i = i+1)
+        imprimir(i);
+    }
+
+
+
+
+	for (int i=1; i<100; i = i+1)
+	{
+	  if( esPrimo(i) )
+	  	imprimir(i);
+	}
+
+  int c = 9;
+
+  do {
+    imprimir(c);
+  } while( c==9 );
+
+  }
+
+  /**
+   * Imprime un número entero en la consola
+   */
+  private void imprimir(int i) 
+  {
+    Console.print(i);
+    Console.print('\n');
+  }
+
+  /**
+   * Verifica si un número es primo
+   */
+  private boolean esPrimo(int i) 
+  {
+    int j = 2;
+    while(j<i) 
+    {
+      if(i%j == 0) return false;
+      j = j+1;
+    }
+    return true;
+  }
+}

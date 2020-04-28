@@ -1,0 +1,16 @@
+<project name="Tinto" default="dist" basedir=".">
+  <description>  build file for Tinto compiler </description>
+	
+  <target name="dist" description="generate the distribution" >
+
+
+    <!-- Put everything in /bin into the tintoc.jar file -->
+    <jar jarfile="tintoc.jar" 
+         manifest="TintoManifest.mf"
+         basedir="bin" />
+
+
+  </target>
+
+
+</project>

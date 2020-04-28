@@ -1,0 +1,39 @@
+import Console;
+
+/**
+ * Prueba de funcionamiento de la entrega 1 de la asignatura Procesadores de Lenguajes.
+ * En esta entrega se ha implementado el reconocimiento de los elementos:
+ * for, do while, switch, case, default, break, continue y el separador ":" (colons o dos puntos). 
+*/
+
+library Main {
+	public void Main() {
+		for(int i=0; i<5; i++) {
+			imprimir(i+1);
+		}
+
+		int j=0;
+
+		do {
+			if(j==9) {
+				continue;
+			}
+
+			imprimir(j);
+			j = j+1;
+		} while(j<10)
+
+		switch(j) {
+			case 10:
+				imprimir(j+1);
+				break;
+			default:
+				imprimir(i);
+		}
+	}
+
+	private void imprimir(int i) {
+	    Console.print(i);
+	    Console.print('\n');
+	}
+}
