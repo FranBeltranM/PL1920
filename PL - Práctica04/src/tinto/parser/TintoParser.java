@@ -481,7 +481,7 @@ public class TintoParser implements TokenConstants {
 	 */
 	private void parseStatementList() throws SintaxException 
 	{
-		// AÑADIDO
+		// AÑADIDO DO, FOR, SWITCH, BREAK, CONTINUE
 		int[] expected = { INT, CHAR, BOOLEAN, IDENTIFIER, IF, WHILE, 
 				           RETURN, SEMICOLON, LBRACE, RBRACE, DO,
 				           FOR, SWITCH, BREAK, CONTINUE };
@@ -521,7 +521,7 @@ public class TintoParser implements TokenConstants {
 	 */
 	private void parseStatement() throws SintaxException 
 	{
-		// AÑADIDO
+		// AÑADIDO MATCH(SEMICOLON), DO, FOR, SWITCH, BREAK, CONTINUE
 		int[] expected = { INT, CHAR, BOOLEAN, IDENTIFIER, IF, WHILE, 
 				           RETURN, SEMICOLON, LBRACE, DO, FOR, SWITCH,
 				           BREAK, CONTINUE };
@@ -572,9 +572,12 @@ public class TintoParser implements TokenConstants {
 		}
 	}
 	
-	// AÑADIDO
-	
+	/**
+	 * Analiza el símbolo <MoreStatement>
+	 * @throws SintaxException
+	 */
 	private void parseMoreStatement() throws SintaxException {
+		// AÑADIDO PARA USAR EN EL SWITCH
 		int[] expected = { INT, CHAR, BOOLEAN, IDENTIFIER, IF, WHILE, 
 		           		   RETURN, SEMICOLON, LBRACE, DO, FOR, SWITCH,
 		           		   CASE, DEFAULT, RBRACE };
@@ -612,6 +615,7 @@ public class TintoParser implements TokenConstants {
 	 */
 	private void parseDecl() throws SintaxException 
 	{
+		// ELIMINADO match(SEMICOLON);
 		int[] expected = { INT, CHAR, BOOLEAN };
 		switch(nextToken.getKind()) 
 		{
@@ -623,7 +627,6 @@ public class TintoParser implements TokenConstants {
 				parseAssignement();
 				parseMoreDecl();
 				break;
-
 			default:
 				throw new SintaxException(nextToken,expected);
 		}
@@ -701,7 +704,7 @@ public class TintoParser implements TokenConstants {
 	 */
 	private void parseElseStm() throws SintaxException 
 	{
-		// AÑADIDO
+		// AÑADIDO DO, FOR, SWITCH, BREAK, CONTINUE
 		int[] expected = { ELSE, INT, CHAR, BOOLEAN, IDENTIFIER, IF, WHILE, 
 						   RETURN, SEMICOLON, LBRACE, RBRACE, DO, FOR, SWITCH,
 						   BREAK, CONTINUE };
@@ -732,8 +735,12 @@ public class TintoParser implements TokenConstants {
 		}
 	}
 	
+	/**
+	 * Analiza el símbolo <SwitchStm>
+	 * @throws SintaxException
+	 */
 	private void parseSwitchStm() throws SintaxException {
-		// AÑADIDO
+		// AÑADIDO SWITCH
 		int[] expected = { SWITCH };
 		
 		switch(nextToken.getKind()) {
@@ -751,9 +758,12 @@ public class TintoParser implements TokenConstants {
 		}
 	}
 	
-
+	/**
+	 * Analiza el símbolo <OptionsSwitch>
+	 * @throws SintaxException
+	 */
 	private void parseOptionsSwitch() throws SintaxException {
-		// AÑADIDO
+		// AÑADIDO PARA USAR EN EL SWITCH
 		int[] expected = { CASE, DEFAULT, RBRACE };
 		
 		switch(nextToken.getKind()) {
@@ -777,8 +787,12 @@ public class TintoParser implements TokenConstants {
 		}
 	}
 	
+	/**
+	 * Analiza el símbolo <DoWhileStm>
+	 * @throws SintaxException
+	 */
 	private void parseDoWhileStm() throws SintaxException {
-		// AÑADIDO
+		// AÑADIDO DO
 		int[] expected = { DO };
 		
 		switch(nextToken.getKind()) {
@@ -796,8 +810,12 @@ public class TintoParser implements TokenConstants {
 		}
 	}
 	
+	/**
+	 * Analiza el símbolo <ForStm>
+	 * @throws SintaxException
+	 */
 	private void parseForStm() throws SintaxException {
-		// AÑADIDO
+		// AÑADIDO FOR
 		int[] expected = { FOR };
 		
 		switch(nextToken.getKind()) {
@@ -817,8 +835,12 @@ public class TintoParser implements TokenConstants {
 		}
 	}
 	
+	/**
+	 * Analiza el símbolo <ForInit>
+	 * @throws SintaxException
+	 */
 	private void parseForInit() throws SintaxException {
-		// AÑADIDO
+		// AÑADIDO PARA USAR EN EL FOR
 		int[] expected = { INT, CHAR, BOOLEAN, IDENTIFIER, SEMICOLON };
 		
 		switch(nextToken.getKind()) {
@@ -837,8 +859,12 @@ public class TintoParser implements TokenConstants {
 		}
 	}
 	
+	/**
+	 * Analiza el símbolo <IdStmList>
+	 * @throws SintaxException
+	 */
 	private void parseIdStmList() throws SintaxException {
-		// AÑADIDO
+		// AÑADIDO PARA USAR EN EL FOR
 		int[] expected = { IDENTIFIER, RPAREN };
 		
 		switch(nextToken.getKind()) {
@@ -853,8 +879,12 @@ public class TintoParser implements TokenConstants {
 		}
 	}
 	
+	/**
+	 * Analiza el símbolo <MoreIdStmList>
+	 * @throws SintaxException
+	 */
 	private void parseMoreIdStmList() throws SintaxException {
-		// AÑADIDO
+		// AÑADIDO PARA USAR EN EL FOR
 		int[] expected = { COMMA, IDENTIFIER, RPAREN };
 
 		switch(nextToken.getKind()) {
@@ -870,8 +900,12 @@ public class TintoParser implements TokenConstants {
 		}
 	}
 	
+	/**
+	 * Analiza el símbolo <BreakStm>
+	 * @throws SintaxException
+	 */
 	private void parseBreakStm() throws SintaxException {
-		// AÑADIDO
+		// AÑADIDO BREAK
 		int[] expected = { BREAK };
 		
 		switch(nextToken.getKind()) {
@@ -884,9 +918,12 @@ public class TintoParser implements TokenConstants {
 		}
 	}
 	
-
+	/**
+	 * Analiza el símbolo <ContinueStm>
+	 * @throws SintaxException
+	 */
 	private void parseContinueStm() throws SintaxException {
-		// AÑADIDO
+		// AÑADIDO CONTINUE
 		int[] expected = { CONTINUE };
 		
 		switch(nextToken.getKind()) {
