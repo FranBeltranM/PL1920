@@ -1,0 +1,951 @@
+options {
+  STATIC=false;
+}
+PARSER_BEGIN(TintoParser)
+//------------------------------------------------------------------//
+//                        COPYRIGHT NOTICE                          //
+//------------------------------------------------------------------//
+// Copyright (c) 2017, Francisco José Moreno Velo                   //
+// All rights reserved.                                             //
+//                                                                  //
+// Redistribution and use in source and binary forms, with or       //
+// without modification, are permitted provided that the following  //
+// conditions are met:                                              //
+//                                                                  //
+// * Redistributions of source code must retain the above copyright //
+//   notice, this list of conditions and the following disclaimer.  // 
+//                                                                  //
+// * Redistributions in binary form must reproduce the above        // 
+//   copyright notice, this list of conditions and the following    // 
+//   disclaimer in the documentation and/or other materials         // 
+//   provided with the distribution.                                //
+//                                                                  //
+// * Neither the name of the University of Huelva nor the names of  //
+//   its contributors may be used to endorse or promote products    //
+//   derived from this software without specific prior written      // 
+//   permission.                                                    //
+//                                                                  //
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND           // 
+// CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,      // 
+// INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF         // 
+// MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE         // 
+// DISCLAIMED. IN NO EVENT SHALL THE COPRIGHT OWNER OR CONTRIBUTORS //
+// BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,         // 
+// EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED  //
+// TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,    //
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND   // 
+// ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT          //
+// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING   //
+// IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF   //
+// THE POSSIBILITY OF SUCH DAMAGE.                                  //
+//------------------------------------------------------------------//
+
+//------------------------------------------------------------------//
+//                      Universidad de Huelva                       //
+//          Departamento de Tecnologías de la Información           //
+//   Área de Ciencias de la Computación e Inteligencia Artificial   //
+//------------------------------------------------------------------//
+//                     PROCESADORES DE LENGUAJE                     //
+//------------------------------------------------------------------//
+//                                                                  //
+//                  Compilador del lenguaje Tinto                   //
+//                                                                  //
+//------------------------------------------------------------------//
+
+
+package tinto.parserjj;
+
+public class TintoParser {
+
+	//----------------------------------------------------------------//
+	//                        Miembros privados                       //
+	//----------------------------------------------------------------//
+
+	/**
+	 * Contador de errores
+	 */
+	private int errorCount;
+	
+	/**
+	 * Mensaje de errores
+	 */
+	private String errorMsg;
+
+	//----------------------------------------------------------------//
+	//       Métodos relacionados con el tratamiento de errores       //
+	//----------------------------------------------------------------//
+
+	/**
+	 * Obtiene el número de errores del análisis
+	 * @return
+	 */
+	public int getErrorCount()
+	{
+		return this.errorCount;
+	}
+	
+	/**
+	 * Obtiene el mensaje de error del análisis
+	 * @return
+	 */
+	public String getErrorMsg()
+	{
+		return this.errorMsg;
+	}
+	
+	/**
+	 * Almacena un error de análisis
+	 * @param ex
+	 */
+	private void catchError(Exception ex)
+	{
+		ex.printStackTrace();
+		this.errorCount++;
+		this.errorMsg += ex.toString();
+	}
+	
+}
+
+PARSER_END(TintoParser)
+
+
+/* WHITE SPACE */
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+| "\f"
+}
+
+/* COMMENTS */
+
+SKIP :
+{
+  <SINGLE_LINE_COMMENT: "//" ( ~["\n","\r"] )* ("\n" | "\r" | "\r\n") >
+|
+  <MULTI_LINE_COMMENT: "/*" ( ~["*"] | ("*")+ ~["*","/"] )* ("*")+ "/" >
+}
+
+
+/* RESERVED WORDS */
+
+TOKEN :
+{
+  < BOOLEAN: "boolean" >
+| < CHAR: "char" >
+| < ELSE: "else" >
+| < FALSE: "false" >
+| < IF: "if" >
+| < IMPORT: "import" >
+| < INT: "int" >
+| < LIBRARY: "library" >
+| < NATIVE: "native" >
+| < PRIVATE: "private" >
+| < PUBLIC: "public" >
+| < RETURN: "return" >
+| < TRUE: "true" >
+| < VOID: "void" >
+| < WHILE: "while" >
+}
+
+/* LITERALS */
+
+TOKEN :
+{
+  < INTEGER_LITERAL: ( <DECIMAL_LITERAL> | <HEX_LITERAL> | <OCTAL_LITERAL> | <BINARY_LITERAL> ) >
+|
+  < #DECIMAL_LITERAL: ["1"-"9"] (["0"-"9"])* >
+|
+  < #HEX_LITERAL: "0" ["x","X"] (["0"-"9","a"-"f","A"-"F"])+ >
+|
+  < #OCTAL_LITERAL: "0" (["0"-"7"])* >
+|
+  < #BINARY_LITERAL: "0" ["b","B"] (["0"-"1"])+ >
+|
+  < CHAR_LITERAL:
+      "'"
+      (   (~["'","\\","\n","\r"])
+        | ("\\"
+            ( ["n","t","b","r","f","\\","'","\""]
+            | ["0"-"7"] ( ["0"-"7"] )?
+            | ["0"-"3"] ["0"-"7"] ["0"-"7"]
+            )
+          )
+      )
+      "'"
+  >
+}
+
+/* IDENTIFIERS */
+
+TOKEN :
+{
+  < IDENTIFIER: ["a"-"z","A"-"Z","_"] ( ["a"-"z","A"-"Z","0"-"9","_"] )* >
+}
+
+/* SEPARATORS */
+
+TOKEN :
+{
+  < LPAREN: "(" >
+| < RPAREN: ")" >
+| < LBRACE: "{" >
+| < RBRACE: "}" >
+| < SEMICOLON: ";" >
+| < COMMA: "," >
+| < DOT: "." >
+}
+
+/* OPERATORS */
+
+TOKEN :
+{
+  < ASSIGN: "=" >
+| < EQ: "==" >
+| < LE: "<=" >
+| < GT: ">" >
+| < LT: "<" >
+| < GE: ">=" >
+| < NE: "!=" >
+| < OR: "||" >
+| < AND: "&&" >
+| < NOT: "!" >
+| < PLUS: "+" >
+| < MINUS: "-" >
+| < PROD: "*" >
+| < DIV: "/" >
+| < MOD: "%" >
+}
+
+
+/**************************************************************/
+/*         EL ANÁLISIS DE LA CABECERA COMIENZA AQUÍ           */
+/**************************************************************/
+
+/**
+ * Reconoce el contenido completo de un archivo ".tinto"
+ *
+ * CompilationUnit ::= (InportClause)* TintoDecl
+ */
+void CompilationUnit():
+{}
+{ 
+  ( ImportClause() )*  TintoDecl()
+}
+
+/**
+ * Reconoce una clausula de importación
+ *
+ * ImportClause ::= <IMPORT> <IDENTIFIER> <SEMICOLON> 
+ */
+void ImportClause():
+{
+  int[] lsync = { SEMICOLON };
+  int[] rsync = { IMPORT, LIBRARY };
+}
+{
+  try
+  {
+    <IMPORT>  <IDENTIFIER>  <SEMICOLON>
+  }
+  catch(Exception ex)
+  {
+    catchError(ex);
+    skipTo(lsync,rsync);
+  }
+}
+
+/**
+ * Reconoce una declaración
+ *
+ * TintoDecl ::=  LibraryDecl | NativeDecl 
+ */
+void TintoDecl() :
+{
+  int[] lsync = { };
+  int[] rsync = { };  
+}
+{
+  try
+  {
+    LibraryDecl() | NativeDecl()
+  }
+  catch(Exception ex)
+  {
+    catchError(ex);
+    skipTo(lsync,rsync);
+  }
+}
+
+/**
+ * Reconoce la declaración de una biblioteca
+ *
+ * LibraryDecl ::=  <LIBRARY> <IDENTIFIER> <LBRACE> ( FunctionDecl )* <RBRACE> 
+ */
+void LibraryDecl() :
+{
+  int[] lsync = { };
+  int[] rsync = { };  
+}
+{
+  try
+  {
+    <LIBRARY> <IDENTIFIER> <LBRACE> ( FunctionDecl() )* <RBRACE>
+  }
+  catch(Exception ex)
+  {
+    catchError(ex);
+    skipTo(lsync,rsync);
+  }  
+}
+
+/**
+ * Reconoce la declaración de una función
+ *
+ * FunctionDecl ::= Access FunctionType <IDENTIFIER> ArgumentDecl FunctionBody
+ */
+void FunctionDecl() :
+{
+  int[] lsync = { };
+  int[] rsync = { PUBLIC, PRIVATE }; 
+}
+{
+  try
+  {
+    Access() FunctionType() <IDENTIFIER>  ArgumentDecl() FunctionBody()
+  }
+  catch(Exception ex)
+  {
+    catchError(ex);
+    skipTo(lsync,rsync);
+  }  
+}
+
+/**
+ * Reconoce la declaración de una biblioteca nativa
+ *
+ * NativeDecl ::=  <NATIVE> <IDENTIFIER> <LBRACE> ( NativeFunctionDecl )* <RBRACE> 
+ */
+void NativeDecl() :
+{
+  int[] lsync = { };
+  int[] rsync = { };
+}
+{
+  try
+  {
+    <NATIVE>  <IDENTIFIER> <LBRACE> ( NativeFunctionDecl() )* <RBRACE>
+  }
+  catch(Exception ex)
+  {
+    catchError(ex);
+    skipTo(lsync,rsync);
+  }
+}
+
+/**
+ * Reconoce la declaración de una función nativa
+ *
+ * NativeFunctionDecl ::= Access FunctionType <IDENTIFIER> ArgumentDecl <SEMICOLON>
+ */
+void NativeFunctionDecl() :
+{
+  int[] lsync = { };
+  int[] rsync = { PUBLIC, PRIVATE }; 
+}
+{
+  try
+  {
+    Access() FunctionType() <IDENTIFIER>  ArgumentDecl() <SEMICOLON>
+  }
+  catch(Exception ex)
+  {
+    catchError(ex);
+    skipTo(lsync,rsync);
+  }
+}
+
+/**
+ * Reconoce un modificador de acceso
+ *
+ * Access ::= <PUBLIC> | <PRIVATE>
+ */
+void Access() :
+{
+  int[] lsync = { };
+  int[] rsync = { VOID, INT, CHAR, BOOLEAN }; 
+}
+{
+  try
+  {
+    <PUBLIC> | <PRIVATE>
+  }
+  catch(Exception ex)
+  {
+    catchError(ex);
+    skipTo(lsync,rsync);
+  }  
+}
+
+/**
+ * Reconoce el tipo de datos que devuelve una función
+ *
+ * FunctionType ::= Type | <VOID>
+ */
+void FunctionType() :
+{
+  int[] lsync = { };
+  int[] rsync = { IDENTIFIER }; 
+}
+{
+  try
+  {
+    Type() | <VOID>
+  }
+  catch(Exception ex)
+  {
+    catchError(ex);
+    skipTo(lsync,rsync);
+  }  
+}
+
+/**
+ * Reconoce un tipo de datos básico
+ *
+ * Type ::= <INT> | <CHAR> | <BOOLEAN>
+ */
+void Type() :
+{
+  int[] lsync = { };
+  int[] rsync = { IDENTIFIER }; 
+}
+{
+  try
+  {
+    <INT> | <CHAR> | <BOOLEAN>
+  }
+  catch(Exception ex)
+  {
+    catchError(ex);
+    skipTo(lsync,rsync);
+  }
+}
+
+/**
+ * Reconoce la declaración de argumentos de una función
+ *
+ * ArgumentDecl ::= <LPAREN> ( Argument ( <COMMA> Argument )* )? <RPAREN>
+ */
+void ArgumentDecl() :
+{
+  int[] lsync = { RPAREN };
+  int[] rsync = { LBRACE };
+}
+{
+  try
+  {
+    <LPAREN>  (  Argument() ( <COMMA>  Argument() )* )?  <RPAREN>
+  }
+  catch(Exception ex)
+  {
+    catchError(ex);
+    skipTo(lsync,rsync);
+  }
+}
+
+/**
+ * Reconoce la declaración de un argumento
+ *
+ * Argument ::= Type <IDENTIFIER>
+ */
+void Argument() :
+{
+  int[] lsync = { };
+  int[] rsync = { COMMA, RPAREN };
+}
+{
+  try
+  {
+    Type()  <IDENTIFIER>
+  }
+  catch(Exception ex)
+  {
+    catchError(ex);
+    skipTo(lsync,rsync);
+  }
+}
+
+/**
+ * Reconoce el cuerpo de una función
+ *
+ * FunctionBody ::= <LBRACE> ( Statement )* <RBRACE>
+ */
+void FunctionBody() :
+{
+  int[] lsync = { };
+  int[] rsync = { PUBLIC, PRIVATE }; 
+}
+{
+  try
+  {
+    <LBRACE>  (  Statement() )*  <RBRACE>
+  }
+  catch(Exception ex)
+  {
+    catchError(ex);
+    skipTo(lsync,rsync);
+  }
+}
+
+/**
+ * Reconoce una sentencia del lenguaje
+ *
+ * Statement ::= Decl | IdStm | IfStm | WhileStm | ReturnStm | NoStm | BlockStm
+ */
+void Statement() :
+{
+  int[] lsync = { SEMICOLON };
+  int[] rsync = { INT, CHAR, BOOLEAN, IF, WHILE, RETURN, RBRACE};
+}
+{
+  try
+  {
+    Decl()
+  | IdStm()
+  | IfStm()
+  | WhileStm()
+  | ReturnStm()
+  | NoStm()
+  | BlockStm()
+  }
+  catch(Exception ex)
+  {
+    catchError(ex);
+    skipTo(lsync,rsync);
+  }
+}
+
+/**
+ * Reconoce la declaración de una variable (o una lista de variables)
+ *
+ * Decl ::= Type <IDENTIFIER> Assignement ( <COMMA> <IDENTIFIER> Assignement )* <SEMICOLON>
+ */
+void Decl() :
+{
+  int[] lsync = { SEMICOLON };
+  int[] rsync = { INT, CHAR, BOOLEAN, IF, WHILE, RETURN, RBRACE};
+}
+{
+  try
+  {
+    Type() <IDENTIFIER>  Assignement()  ( <COMMA> <IDENTIFIER> Assignement() )*  <SEMICOLON>
+  }
+  catch(Exception ex)
+  {
+    catchError(ex);
+    skipTo(lsync,rsync);
+  }
+}
+
+/**
+ * Reconoce la asignación inicial de una variable
+ *
+ * Assignement ::= ( <ASSIGN>  Expr )? 
+ */
+void Assignement() :
+{
+  int[] lsync = { };
+  int[] rsync = { COMMA, SEMICOLON };
+}
+{
+  try
+  {
+    ( <ASSIGN>  Expr() )?
+  }
+  catch(Exception ex)
+  {
+    catchError(ex);
+    skipTo(lsync,rsync);
+  }
+}
+
+/**
+ * Reconoce una instrucción "if".
+ *
+ * IfStm ::= <IF> <LPAREN> Expr <RPAREN> Stm  ( <ELSE> Stm )?
+ */
+void IfStm() :
+{
+  int[] lsync = { SEMICOLON };
+  int[] rsync = { INT, CHAR, BOOLEAN, IF, WHILE, RETURN, RBRACE};
+}
+{
+  try
+  {
+    <IF>  <LPAREN>  Expr()  <RPAREN>  Statement()
+    ( LOOKAHEAD( 1 ) <ELSE>  Statement() )?
+  }
+  catch(Exception ex)
+  {
+    catchError(ex);
+    skipTo(lsync,rsync);
+  }
+}
+
+/**
+ * Reconoce una instrucción "while".
+ *
+ * WhileStm ::= <WHILE> <LPAREN> Expr <RPAREN> Stm
+ */
+void WhileStm() :
+{
+  int[] lsync = { SEMICOLON };
+  int[] rsync = { INT, CHAR, BOOLEAN, IF, WHILE, RETURN, RBRACE};
+}
+{
+  try
+  {
+    <WHILE>  <LPAREN>  Expr()  <RPAREN>  Statement()
+  }
+  catch(Exception ex)
+  {
+    catchError(ex);
+    skipTo(lsync,rsync);
+  }
+}
+
+/**
+ * Reconoce una instrucción "return".
+ *
+ * ReturnStm ::= <RETURN> ( Expr )? <SEMICOLON>
+ */
+void ReturnStm() :
+{
+  int[] lsync = { SEMICOLON };
+  int[] rsync = { INT, CHAR, BOOLEAN, IF, WHILE, RETURN, RBRACE};
+}
+{
+  try
+  {
+    <RETURN>  ( Expr() )?  <SEMICOLON>
+  }
+  catch(Exception ex)
+  {
+    catchError(ex);
+    skipTo(lsync,rsync);
+  }
+}
+
+/**
+ * Reconoce una instrucción vacía.
+ *
+ * NoStm ::= <SEMICOLON>
+ */
+void NoStm() :
+{
+  int[] lsync = { SEMICOLON };
+  int[] rsync = { INT, CHAR, BOOLEAN, IF, WHILE, RETURN, RBRACE};
+}
+{
+  try
+  {
+    <SEMICOLON>
+  }
+  catch(Exception ex)
+  {
+    catchError(ex);
+    skipTo(lsync,rsync);
+  }
+}
+
+/**
+ * Reconoce una instrucción que comienza por "id"
+ *
+ * IdStm ::= <ID> ( Assignement | MethodCall | <DOT>  <ID>  MethodCall )  <SEMICOLON>
+ */
+void  IdStm() :
+{
+  int[] lsync = { SEMICOLON };
+  int[] rsync = { INT, CHAR, BOOLEAN, IF, WHILE, RETURN, RBRACE};
+}
+{
+  try
+  {
+    <IDENTIFIER>  ( <ASSIGN> Expr() | FunctionCall() | <DOT>  <IDENTIFIER>  FunctionCall() ) <SEMICOLON>
+  }
+  catch(Exception ex)
+  {
+    catchError(ex);
+    skipTo(lsync,rsync);
+  }
+}
+
+/**
+ * Reconoce un bloque de instrucciones entre llaves.
+ *
+ * BlockStm ::= <LBRACE> ( Stm )* <RBRACE>
+ */
+void BlockStm() :
+{
+  int[] lsync = { SEMICOLON };
+  int[] rsync = { INT, CHAR, BOOLEAN, IF, WHILE, RETURN, RBRACE};
+}
+{
+  try
+  {
+    <LBRACE> ( Statement() )* <RBRACE>
+  }
+  catch(Exception ex)
+  {
+    catchError(ex);
+    skipTo(lsync,rsync);
+  }
+}
+
+/**************************************************************/
+/*       EL ANÁLISIS DE LAS EXPRESIONES COMIENZA AQUÍ         */
+/**************************************************************/
+
+/**
+ * Reconoce una expresión (considerando el operador OR como el de menor prioridad)
+ *
+ * Expr ::= AndExpr ( <OR> AndExpr )*
+ */
+void Expr() :
+{
+  int[] lsync = { };
+  int[] rsync = { SEMICOLON, COMMA, RPAREN };
+}
+{
+  try
+  {
+    AndExpr() ( <OR>  AndExpr()  )*
+  }
+  catch(Exception ex)
+  {
+    catchError(ex);
+    skipTo(lsync,rsync);
+  }
+}
+
+/**
+ * Reconoce una expresión en el nivel de prioridad del operador AND
+ *
+ * AndExpr ::= RelExpr ( <AND> RelExpr )*
+ */
+void AndExpr() :
+{
+  int[] lsync = { };
+  int[] rsync = { SEMICOLON, COMMA, RPAREN, OR };
+}
+{
+  try
+  {
+    RelExpr() ( <AND> RelExpr()  )*
+  }
+  catch(Exception ex)
+  {
+    catchError(ex);
+    skipTo(lsync,rsync);
+  }
+}
+
+/**
+ * Reconoce una expresión en el nivel de prioridad de los comparadores
+ *
+ * RelExpr ::= SumExpr ( RelOp SumExpr )?
+ */
+void RelExpr() :
+{
+  int[] lsync = { };
+  int[] rsync = { SEMICOLON, COMMA, RPAREN, OR, AND };
+}
+{
+  try
+  {
+    SumExpr() ( RelOp() SumExpr() )?
+  }
+  catch(Exception ex)
+  {
+    catchError(ex);
+    skipTo(lsync,rsync);
+  }
+}
+
+/**
+ * Reconoce un operador de relación
+ *
+ * RelOp ::= <EQ> | <NE> | <GT> | <GE> | <LT> | <LE>
+ */
+void RelOp() :
+{}
+{
+   <EQ> 
+ | <NE> 
+ | <GT> 
+ | <GE> 
+ | <LT> 
+ | <LE> 
+}
+
+/**
+ * Reconoce una expresión en el nivel de prioridad de la suma
+ * (una expresión aritmética)
+ *
+ * SumExpr ::= UnOp ProdExpr ( SumOp ProdExpr )
+ */
+void SumExpr() :
+{
+  int[] lsync = { };
+  int[] rsync = { SEMICOLON, COMMA, RPAREN, OR, AND, EQ, NE, GT, GE, LT, LE };
+}
+{
+  try
+  {
+    UnOp() ProdExpr() ( SumOp() ProdExpr() )*
+  }
+  catch(Exception ex)
+  {
+    catchError(ex);
+    skipTo(lsync,rsync);
+  }
+}
+
+/**
+ * Reconoce un operador unario
+ *
+ * UnOp ::= ( <NOT> | <MINUS>  | <PLUS>  )?
+ */
+void UnOp() :
+{ }
+{
+  ( <NOT> | <MINUS>  | <PLUS>  )?
+}
+
+/**
+ * Reconoce un operador del nivel de prioridad de la suma
+ *
+ * SumOp ::= <MINUS> | <PLUS>
+ */
+void SumOp() :
+{ }
+{
+  ( <MINUS>  | <PLUS>  )
+}	
+
+/**
+ * Reconoce una expresión en el nivel de prioridad del producto
+ * (un término aritmético)
+ *
+ * ProdExpr ::= Factor ( MultOp Factor )*
+ */
+void ProdExpr() :
+{
+  int[] lsync = { };
+  int[] rsync = { SEMICOLON, COMMA, RPAREN, OR, AND, EQ, NE, GT, GE, LT, LE, PLUS, MINUS };
+}
+{
+  try
+  {
+    Factor() ( MultOp() Factor() )*
+  }
+  catch(Exception ex)
+  {
+    catchError(ex);
+    skipTo(lsync,rsync);
+  }
+}
+
+/**
+ * Reconoce un operador del nivel de prioridad del producto
+ *
+ * MultOp ::= <PROD> | <DIV> | <MOD>
+ */
+void MultOp() :
+{ }
+{
+  ( <PROD>  | <DIV> | <MOD> )
+}	
+
+/**
+ * Reconoce un factor
+ *
+ * Factor ::= Literal | Reference | <LPAREN> Expr <RPAREN>
+ */
+void Factor() :
+{
+  int[] lsync = { };
+  int[] rsync = { SEMICOLON, COMMA, RPAREN, OR, AND, EQ, NE, GT, GE, LT, LE, PLUS, MINUS, PROD, DIV, MOD };
+}
+{
+  try
+  {
+    ( Literal() | Reference() |	<LPAREN>  Expr()  <RPAREN> )
+  }
+  catch(Exception ex)
+  {
+    catchError(ex);
+    skipTo(lsync,rsync);
+  }
+}
+
+/**
+ * Reconoce un literal
+ *
+ * Literal ::= <INTEGER_LITERAL> | <CHAR_LITERAL>  | <TRUE>  | <FALSE>
+ */
+void Literal() :
+{ }
+{
+   <INTEGER_LITERAL>    
+ | <CHAR_LITERAL>       
+ | <TRUE>               
+ | <FALSE>              
+}
+
+/**
+ * Reconoce una referencia a una variable o a una función
+ *
+ * Reference ::= <IDENTIFIER> ( FunctionCall | <DOT> <IDENTIFIER> FunctionCall )?
+ */
+void Reference() :
+{ }
+{
+  <IDENTIFIER>  ( FunctionCall() | <DOT>  <IDENTIFIER>  FunctionCall() )? 
+}
+
+/**
+ * Reconoce los parámetros de llamada a una función
+ *
+ * FunctionCall ::= <LPAREN> ( Expr ( <COMMA> Expr )* )? <RPAREN>
+ */
+void FunctionCall() :
+{ }
+{
+   <LPAREN> ( Expr()  ( <COMMA> Expr() )* )?  <RPAREN>
+}
+
+
+JAVACODE
+void skipTo(int[] left, int[] right)
+{
+  Token prev = getToken(0);
+  Token next = getToken(1);
+  boolean flag = false;
+  if(prev.kind == EOF || next.kind == EOF) flag = true;
+  for(int i=0; i<left.length; i++) if(prev.kind == left[i]) flag = true;
+  for(int i=0; i<right.length; i++) if(next.kind == right[i]) flag = true;
+	
+  while(!flag)
+  {
+    getNextToken();
+    prev = getToken(0);
+    next = getToken(1);
+    if(prev.kind == EOF || next.kind == EOF) flag = true;
+    for(int i=0; i<left.length; i++) if(prev.kind == left[i]) flag = true;
+    for(int i=0; i<right.length; i++) if(next.kind == right[i]) flag = true;
+  }
+}

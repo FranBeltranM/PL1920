@@ -1,0 +1,593 @@
+options {
+  STATIC=false;
+}
+PARSER_BEGIN(TintoParser)
+//------------------------------------------------------------------//
+//                        COPYRIGHT NOTICE                          //
+//------------------------------------------------------------------//
+// Copyright (c) 2017, Francisco José Moreno Velo                   //
+// All rights reserved.                                             //
+//                                                                  //
+// Redistribution and use in source and binary forms, with or       //
+// without modification, are permitted provided that the following  //
+// conditions are met:                                              //
+//                                                                  //
+// * Redistributions of source code must retain the above copyright //
+//   notice, this list of conditions and the following disclaimer.  // 
+//                                                                  //
+// * Redistributions in binary form must reproduce the above        // 
+//   copyright notice, this list of conditions and the following    // 
+//   disclaimer in the documentation and/or other materials         // 
+//   provided with the distribution.                                //
+//                                                                  //
+// * Neither the name of the University of Huelva nor the names of  //
+//   its contributors may be used to endorse or promote products    //
+//   derived from this software without specific prior written      // 
+//   permission.                                                    //
+//                                                                  //
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND           // 
+// CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,      // 
+// INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF         // 
+// MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE         // 
+// DISCLAIMED. IN NO EVENT SHALL THE COPRIGHT OWNER OR CONTRIBUTORS //
+// BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,         // 
+// EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED  //
+// TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,    //
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND   // 
+// ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT          //
+// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING   //
+// IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF   //
+// THE POSSIBILITY OF SUCH DAMAGE.                                  //
+//------------------------------------------------------------------//
+
+//------------------------------------------------------------------//
+//                      Universidad de Huelva                       //
+//          Departamento de Tecnologías de la Información           //
+//   Área de Ciencias de la Computación e Inteligencia Artificial   //
+//------------------------------------------------------------------//
+//                     PROCESADORES DE LENGUAJE                     //
+//------------------------------------------------------------------//
+//                                                                  //
+//                  Compilador del lenguaje Tinto                   //
+//                                                                  //
+//------------------------------------------------------------------//
+
+
+package tinto.parser;
+
+public class TintoParser {
+
+}
+
+PARSER_END(TintoParser)
+
+
+/* WHITE SPACE */
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+| "\f"
+}
+
+/* COMMENTS */
+
+SKIP :
+{
+  <SINGLE_LINE_COMMENT: "//" ( ~["\n","\r"] )* ("\n" | "\r" | "\r\n") >
+|
+  <MULTI_LINE_COMMENT: "/*" ( ~["*"] | ("*")+ ~["*","/"] )* ("*")+ "/" >
+}
+
+
+/* RESERVED WORDS */
+
+TOKEN :
+{
+  < BOOLEAN: "boolean" >
+| < CHAR: "char" >
+| < ELSE: "else" >
+| < FALSE: "false" >
+| < IF: "if" >
+| < IMPORT: "import" >
+| < INT: "int" >
+| < LIBRARY: "library" >
+| < NATIVE: "native" >
+| < PRIVATE: "private" >
+| < PUBLIC: "public" >
+| < RETURN: "return" >
+| < TRUE: "true" >
+| < VOID: "void" >
+| < WHILE: "while" >
+}
+
+/* LITERALS */
+
+TOKEN :
+{
+  < INTEGER_LITERAL: ( <DECIMAL_LITERAL> | <HEX_LITERAL> | <OCTAL_LITERAL> | <BINARY_LITERAL> ) >
+|
+  < #DECIMAL_LITERAL: ["1"-"9"] (["0"-"9"])* >
+|
+  < #HEX_LITERAL: "0" ["x","X"] (["0"-"9","a"-"f","A"-"F"])+ >
+|
+  < #OCTAL_LITERAL: "0" (["0"-"7"])* >
+|
+  < #BINARY_LITERAL: "0" ["b","B"] (["0"-"1"])+ >
+|
+  < CHAR_LITERAL:
+      "'"
+      (   (~["'","\\","\n","\r"])
+        | ("\\"
+            ( ["n","t","b","r","f","\\","'","\""]
+            | ["0"-"7"] ( ["0"-"7"] )?
+            | ["0"-"3"] ["0"-"7"] ["0"-"7"]
+            )
+          )
+      )
+      "'"
+  >
+}
+
+/* IDENTIFIERS */
+
+TOKEN :
+{
+  < IDENTIFIER: ["a"-"z","A"-"Z","_"] ( ["a"-"z","A"-"Z","0"-"9","_"] )* >
+}
+
+/* SEPARATORS */
+
+TOKEN :
+{
+  < LPAREN: "(" >
+| < RPAREN: ")" >
+| < LBRACE: "{" >
+| < RBRACE: "}" >
+| < SEMICOLON: ";" >
+| < COMMA: "," >
+| < DOT: "." >
+}
+
+/* OPERATORS */
+
+TOKEN :
+{
+  < ASSIGN: "=" >
+| < EQ: "==" >
+| < LE: "<=" >
+| < GT: ">" >
+| < LT: "<" >
+| < GE: ">=" >
+| < NE: "!=" >
+| < OR: "||" >
+| < AND: "&&" >
+| < NOT: "!" >
+| < PLUS: "+" >
+| < MINUS: "-" >
+| < PROD: "*" >
+| < DIV: "/" >
+| < MOD: "%" >
+}
+
+
+/**************************************************************/
+/*         EL ANÁLISIS DE LA CABECERA COMIENZA AQUÍ           */
+/**************************************************************/
+
+/**
+ * Reconoce el contenido completo de un archivo ".tinto"
+ *
+ * CompilationUnit ::= (InportClause)* TintoDecl
+ */
+void CompilationUnit():
+{}
+{ 
+  ( ImportClause() )*  TintoDecl()
+}
+
+/**
+ * Reconoce una clausula de importación
+ *
+ * ImportClause ::= <IMPORT> <IDENTIFIER> <SEMICOLON> 
+ */
+void ImportClause():
+{}
+{
+  <IMPORT>  <IDENTIFIER>  <SEMICOLON> 
+}
+
+/**
+ * Reconoce una declaración
+ *
+ * TintoDecl ::=  LibraryDecl | NativeDecl 
+ */
+void TintoDecl() :
+{}
+{
+  LibraryDecl()
+|
+  NativeDecl()
+}
+
+/**
+ * Reconoce la declaración de una biblioteca
+ *
+ * LibraryDecl ::=  <LIBRARY> <IDENTIFIER> <LBRACE> ( FunctionDecl )* <RBRACE> 
+ */
+void LibraryDecl() :
+{}
+{
+  <LIBRARY>  <IDENTIFIER> <LBRACE> ( FunctionDecl() )* <RBRACE>
+}
+
+/**
+ * Reconoce la declaración de una función
+ *
+ * FunctionDecl ::= Access FunctionType <IDENTIFIER> ArgumentDecl FunctionBody
+ */
+void FunctionDecl() :
+{}
+{
+  Access() FunctionType() <IDENTIFIER>  ArgumentDecl() FunctionBody()
+}
+
+/**
+ * Reconoce la declaración de una biblioteca nativa
+ *
+ * NativeDecl ::=  <NATIVE> <IDENTIFIER> <LBRACE> ( NativeFunctionDecl )* <RBRACE> 
+ */
+void NativeDecl() :
+{}
+{
+  <NATIVE>  <IDENTIFIER> <LBRACE> ( NativeFunctionDecl() )* <RBRACE>
+}
+
+/**
+ * Reconoce la declaración de una función nativa
+ *
+ * NativeFunctionDecl ::= Access FunctionType <IDENTIFIER> ArgumentDecl <SEMICOLON>
+ */
+void NativeFunctionDecl() :
+{}
+{
+  Access() FunctionType() <IDENTIFIER>  ArgumentDecl() <SEMICOLON>
+}
+
+/**
+ * Reconoce un modificador de acceso
+ *
+ * Access ::= <PUBLIC> | <PRIVATE>
+ */
+void Access() :
+{}
+{
+   <PUBLIC>      
+ | <PRIVATE>  
+}
+
+/**
+ * Reconoce el tipo de datos que devuelve una función
+ *
+ * FunctionType ::= Type | <VOID>
+ */
+void FunctionType() :
+{}
+{
+   Type()
+ | <VOID>
+}
+
+/**
+ * Reconoce un tipo de datos básico
+ *
+ * Type ::= <INT> | <CHAR> | <BOOLEAN>
+ */
+void Type() :
+{}
+{
+   <INT>      
+ | <CHAR>     
+ | <BOOLEAN>  
+}
+
+/**
+ * Reconoce la declaración de argumentos de una función
+ *
+ * ArgumentDecl ::= <LPAREN> ( Argument ( <COMMA> Argument )* )? <RPAREN>
+ */
+void ArgumentDecl() :
+{ }
+{
+    <LPAREN>  (  Argument() ( <COMMA>  Argument() )* )?  <RPAREN>  
+}
+
+/**
+ * Reconoce la declaración de un argumento
+ *
+ * Argument ::= Type <IDENTIFIER>
+ */
+void Argument() :
+{ }
+{
+    Type()  <IDENTIFIER>
+}
+
+/**
+ * Reconoce el cuerpo de una función
+ *
+ * FunctionBody ::= <LBRACE> ( Statement )* <RBRACE>
+ */
+void FunctionBody() :
+{ }
+{
+   <LBRACE>  (  Statement() )*  <RBRACE>
+}
+
+/**
+ * Reconoce una sentencia del lenguaje
+ *
+ * Statement ::= Decl | IdStm | IfStm | WhileStm | ReturnStm | NoStm | BlockStm
+ */
+void Statement() :
+{ }
+{
+ (
+   Decl()
+ | IdStm()
+ | IfStm()
+ | WhileStm()
+ | ReturnStm()
+ | NoStm()
+ | BlockStm()
+ )
+}
+
+/**
+ * Reconoce la declaración de una variable (o una lista de variables)
+ *
+ * Decl ::= Type <IDENTIFIER> Assignement ( <COMMA> <IDENTIFIER> Assignement )* <SEMICOLON>
+ */
+void Decl() :
+{ }
+{
+   Type() <IDENTIFIER>  Assignement()  ( <COMMA> <IDENTIFIER> Assignement() )*  <SEMICOLON>
+}
+
+/**
+ * Reconoce la asignación inicial de una variable
+ *
+ * Assignement ::= ( <ASSIGN>  Expr )? 
+ */
+void Assignement() :
+{ }
+{
+  ( <ASSIGN>  Expr() )?  
+}
+
+/**
+ * Reconoce una instrucción "if".
+ *
+ * IfStm ::= <IF> <LPAREN> Expr <RPAREN> Stm  ( <ELSE> Stm )?
+ */
+void IfStm() :
+{ }
+{
+  <IF>  <LPAREN>  Expr()  <RPAREN>  Statement()  
+  ( LOOKAHEAD( 1 ) <ELSE>  Statement() )?
+}
+
+/**
+ * Reconoce una instrucción "while".
+ *
+ * WhileStm ::= <WHILE> <LPAREN> Expr <RPAREN> Stm
+ */
+void WhileStm() :
+{ }
+{
+  <WHILE>  <LPAREN>  Expr()  <RPAREN>  Statement()
+}
+
+/**
+ * Reconoce una instrucción "return".
+ *
+ * ReturnStm ::= <RETURN> ( Expr )? <SEMICOLON>
+ */
+void ReturnStm() :
+{ }
+{
+  <RETURN>  ( Expr() )?  <SEMICOLON>
+}
+
+/**
+ * Reconoce una instrucción vacía.
+ *
+ * NoStm ::= <SEMICOLON>
+ */
+void NoStm() :
+{}
+{
+  <SEMICOLON>
+}
+
+/**
+ * Reconoce una instrucción que comienza por "id"
+ *
+ * IdStm ::= <ID> ( Assignement | MethodCall | <DOT>  <ID>  MethodCall )  <SEMICOLON>
+ */
+void  IdStm() :
+{ }
+{
+  <IDENTIFIER>  ( <ASSIGN> Expr() | FunctionCall() | <DOT>  <IDENTIFIER>  FunctionCall() ) <SEMICOLON> 
+}
+
+/**
+ * Reconoce un bloque de instrucciones entre llaves.
+ *
+ * BlockStm ::= <LBRACE> ( Stm )* <RBRACE>
+ */
+void BlockStm() :
+{ }
+{
+  <LBRACE> ( Statement() )* <RBRACE>  
+}
+
+/**************************************************************/
+/*       EL ANÁLISIS DE LAS EXPRESIONES COMIENZA AQUÍ         */
+/**************************************************************/
+
+/**
+ * Reconoce una expresión (considerando el operador OR como el de menor prioridad)
+ *
+ * Expr ::= AndExpr ( <OR> AndExpr )*
+ */
+void Expr() :
+{ }
+{
+  AndExpr() ( <OR>  AndExpr()  )*
+}
+
+/**
+ * Reconoce una expresión en el nivel de prioridad del operador AND
+ *
+ * AndExpr ::= RelExpr ( <AND> RelExpr )*
+ */
+void AndExpr() :
+{ }
+{
+  RelExpr() ( <AND> RelExpr()  )*
+}
+
+/**
+ * Reconoce una expresión en el nivel de prioridad de los comparadores
+ *
+ * RelExpr ::= SumExpr ( RelOp SumExpr )?
+ */
+void RelExpr() :
+{ }
+{
+   SumExpr() ( RelOp() SumExpr() )?
+}
+
+/**
+ * Reconoce un operador de relación
+ *
+ * RelOp ::= <EQ> | <NE> | <GT> | <GE> | <LT> | <LE>
+ */
+void RelOp() :
+{}
+{
+   <EQ> 
+ | <NE> 
+ | <GT> 
+ | <GE> 
+ | <LT> 
+ | <LE> 
+}
+
+/**
+ * Reconoce una expresión en el nivel de prioridad de la suma
+ * (una expresión aritmética)
+ *
+ * SumExpr ::= UnOp ProdExpr ( SumOp ProdExpr )
+ */
+void SumExpr() :
+{ }
+{
+	UnOp() ProdExpr() ( SumOp() ProdExpr() )*
+}
+
+/**
+ * Reconoce un operador unario
+ *
+ * UnOp ::= ( <NOT> | <MINUS>  | <PLUS>  )?
+ */
+void UnOp() :
+{ }
+{
+  ( <NOT> | <MINUS>  | <PLUS>  )?
+}
+
+/**
+ * Reconoce un operador del nivel de prioridad de la suma
+ *
+ * SumOp ::= <MINUS> | <PLUS>
+ */
+void SumOp() :
+{ }
+{
+  ( <MINUS>  | <PLUS>  )
+}	
+
+/**
+ * Reconoce una expresión en el nivel de prioridad del producto
+ * (un término aritmético)
+ *
+ * ProdExpr ::= Factor ( MultOp Factor )*
+ */
+void ProdExpr() :
+{ }
+{
+	Factor() ( MultOp() Factor() )*  
+}
+
+/**
+ * Reconoce un operador del nivel de prioridad del producto
+ *
+ * MultOp ::= <PROD> | <DIV> | <MOD>
+ */
+void MultOp() :
+{ }
+{
+  ( <PROD>  | <DIV> | <MOD> )
+}	
+
+/**
+ * Reconoce un factor
+ *
+ * Factor ::= Literal | Reference | <LPAREN> Expr <RPAREN>
+ */
+void Factor() :
+{ }
+{
+	( Literal() | Reference() |	<LPAREN>  Expr()  <RPAREN> )
+}
+
+/**
+ * Reconoce un literal
+ *
+ * Literal ::= <INTEGER_LITERAL> | <CHAR_LITERAL>  | <TRUE>  | <FALSE>
+ */
+void Literal() :
+{ }
+{
+   <INTEGER_LITERAL>    
+ | <CHAR_LITERAL>       
+ | <TRUE>               
+ | <FALSE>              
+}
+
+/**
+ * Reconoce una referencia a una variable o a una función
+ *
+ * Reference ::= <IDENTIFIER> ( FunctionCall | <DOT> <IDENTIFIER> FunctionCall )?
+ */
+void Reference() :
+{ }
+{
+  <IDENTIFIER>  ( FunctionCall() | <DOT>  <IDENTIFIER>  FunctionCall() )? 
+}
+
+/**
+ * Reconoce los parámetros de llamada a una función
+ *
+ * FunctionCall ::= <LPAREN> ( Expr ( <COMMA> Expr )* )? <RPAREN>
+ */
+void FunctionCall() :
+{ }
+{
+   <LPAREN> ( Expr()  ( <COMMA> Expr() )* )?  <RPAREN>
+}

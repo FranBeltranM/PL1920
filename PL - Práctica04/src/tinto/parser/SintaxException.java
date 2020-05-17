@@ -136,6 +136,7 @@ public class SintaxException extends Exception implements TokenConstants {
 			case DEFAULT: return "default";
 			case BREAK: return "break";
 			case CONTINUE: return "continue";
+			case COLONS: return ":";
 			case IDENTIFIER: return "IDENTIFIER";
 			case INTEGER_LITERAL: return "INTEGER_LITERAL";
 			case CHAR_LITERAL: return "CHAR_LITERAL";

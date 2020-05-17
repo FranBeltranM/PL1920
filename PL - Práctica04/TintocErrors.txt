@@ -1,8 +1,0 @@
-[File Main.tinto] 1 error found:
-Sintax exception at row 16, column 4.
-  Found ;
-  while expecting one of
-    case
-    default
-    }
-
